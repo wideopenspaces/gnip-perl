@@ -1,47 +1,64 @@
-Basic Usage information for Gnip Perl module:
+Welcome to Gnip's Perl convenience library!
 
-SUBSCRIBER:
+=Overview=
 
-* The Perl subscriber class is called ‘GnipSubscriber’.
+This library consists of a Perl module called Gnip that can be used
+to conveniently access Gnip services.  This module can be instantiated
+with:
 
-* The subscriber class may be instantiated with the following line of code:
-    subscriber = new GnipSubscriber(<username>, <password>);
+  my $gnip = new Gnip($username, $password); 
 
-* The subscriber class provides the following public methods (see details in
-the module):
-    - subscriber->get()
-       - Returns the publisher activity for a specific time
-    - subscriber->create_collection()
-       - Creates a collection of userids from pre-created XML
-    - subscriber->find_collection()
-       - Gets the collection information
-    - subscriber->get_collection()
-       - Gets the activity of a collection
-    - subscriber->update_collection()
-       - Updates a collection from pre-created XML
-    - subscriber->delete_collection()
-       - Deletes a collection
+assuming you have declared the $username and $password variables
+with valid credentials for accessing a Gnip account.
 
-PUBLISHER:
+Once a Gnip instance is created, it can be used to publish activities
+to a Gnip Publisher that you own using:
 
-* The Perl publisher class is called ‘GnipPublisher’.
+  $gnip->publish($publisher_name, $activities_xml);
 
-* The publisher class may be instantiated with the following line of code:
-    publisher = new GnipPublisher(<username>, <password>, <publisher>)
+Activities can be retrieved using:
 
-* The publisher class provides the following public methods (see details in
-the module):
-    - publisher->publish()
-       - Publishes activities to the Gnip server
+  $activities_xml = $gnip->get_notifications($publisher_name);
 
-ADDITIONAL NOTES:
+and activity buckets can be accessed using a date/time string
+or just by getting the (default) current bucket.
 
-* There are some minimal test cases included in the file "GnipTester.pl".
-The test cases also provide examples of usage. Note that you'll need to fill 
-in the information for the TEST_* constants at the top of the class, in order 
-for the test cases to work properly.
+Additional API methods allow you to create, modify, and delete
+Filters on a Publisher as well as access notifications and
+activities for one of your Filters.
 
-* Docstrings are also included for each class and method.
+Note, the data that goes into / comes out of a Gnip instance
+are XML documents that you must parse.  To help with detecting
+error conditions, all of the functions that connect to a Gnip 
+server over the network return the HTTP response status code. 
 
-* The Gnip module requires the third party libraries "DateTime" and 
-"DateTime::Format::Strptime".
+If an HTTP request is successful, the return $content could 
+contain a <filters>, <activities>, or other XML document
+described in Gnip.xsd.  Otherwise, $content will contain
+the error XML document.
+
+=Notes=
+* Minimal tests are provided in GnipTester.pl and in addition to 
+testing show basics of using the Gnip API.  To execute the tests,
+run:
+  perl GnipTester.pl
+to see usage for passing username, password, and the name of a 
+publisher that you own.
+
+* Docstrings are also included for each method.
+
+* The Gnip module requires several 3rd party libraries including:
+  - DateTime
+  - DateTime::Format::Strptime
+Additionally, communication to a Gnip server is done over SSL which
+requires that Perl be configured with SSL support.  Please use Google
+to find README.SSL for more information.
+
+* Gnip welcomes contributions to this library, so if you encounter 
+bugs, want to provide a patch, or just have general feedback, please
+send mail into the Gnip community which is here:
+
+  http://groups.google.com/group/gnip-community
+
+Thanks!
+- The Gnip Team

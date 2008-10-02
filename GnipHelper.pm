@@ -1,52 +1,32 @@
 =head1 NAME
-
-GnipHelper - Common functionality between all Gnip classes
-
+GnipHelper - Common functionality used to communicate with Gnip.
 =head1 DESCRIPTION
-
-This module provides basic functionality help for all Gnip classes.
-
+This module provides basic, shared functionality for communicating with Gnip.
 =head2 FUNCTIONS
-
-The following functions are exported by default
-
+The following functions are exported by this module.
 =begin html
-
 <HR>
-
 =end html
-
 =cut
-
 package GnipHelper;
 use strict;
+use LWP::Debug; # qw(+ conns);
 use LWP::UserAgent;
 use DateTime;
 use DateTime::Format::Strptime;
 
-use constant GNIP_BASE_ADDRESS => 'prod.gnipcentral.com';
 use constant GNIP_BASE_URL => 'https://prod.gnipcentral.com';
 
 =head3 C<new($username, $password)>
-
-Initializes a GnipHelper object
-
+Initialize a GnipHelper instance
 =head4 Parameters
-
 =over 4 
-
-=item * C<$username> (string) - The Gnip account username
-
+=item * C<$username> (string) - The Gnip account username (an e-mail address)
 =item * C<$password> (string) - The Gnip account password
-
 =back
-
 =begin html
-
 <HR>
-
 =end html
-
 =cut
 sub new 
 {
@@ -60,29 +40,20 @@ sub new
 }
 
 =head3 C<doHttpGet($url)>
-
-Does a HTTP GET request of the passed in url, and returns 
-        the result from the server.
-
+Does an HTTP GET request using the passed in URL and returns the response from the server.
 =head4 Parameters
-
 =over 4
-
 =item * C<$url> (string) - The URL to GET
-
 =back
-
-Returns a string representing the page retrieved.
-
+Returns a string representing the HTTP response.  If the request is successful, 
+return the response body; otherwise, return the status line.
 =begin html
-
 <HR>
-
 =end html
-
 =cut
 sub doHttpGet
 {
+	# todo: return the response code
    my ($self, $url) = @_;
 
    my $agent = LWP::UserAgent->new;
@@ -90,38 +61,29 @@ sub doHttpGet
    $request->authorization_basic($self->{_username}, $self->{_password});
    my $response = $agent->request($request);
 
-   # Check the outcome of the response
+   my $content = $response->status_line;
    if ($response->is_success) {
-      return $response->content;
+      $content = $response->content;
    }
-   else {
-      return $response->status_line;
-   }
+
+  return ($content, $response->code);
 }
 
 =head3 C<doHttpPost($url, $data)>
-
-Does a HTTP POST request of the passed in url and data, and returns 
-        the result from the server.
-
+Does a request using HTTP POST using the provided URL sending the data in the body.  
+If the request was successful, the response body content is returned; otherwise,
+the status line is returned.  The POST is sent with Content-Type set to 
+application/xml.
 =head4 Parameters
-
 =over 4
-
-=item * C<$url> (string) - The URL to GET
-
-=item * C<$data> (string) - POST data url encoded with content-type as application/xml
-
+=item * C<$url> (string) - The POST URL
+=item * C<$data> (string) - The data sent with the POST
 =back
-
-Returns a string representing the page retrieved.
-
+Returns a string representing the HTTP response.  If the request is successful, 
+return the response body; otherwise, return the status line.
 =begin html
-
 <HR>
-
 =end html
-
 =cut
 sub doHttpPost 
 {
@@ -135,39 +97,30 @@ sub doHttpPost
 
    my $response = $agent->request($request);
 
-   # Check the outcome of the response
+   my $content = $response->status_line;
    if ($response->is_success) {
-      return $response->content;
+      $content = $response->content;
    }
-   else {
-      return $response->status_line;
-   }
+
+  return ($content, $response->code);
 }
 
 
 =head3 C<doHttpPut($url, $data)>
-
-Does a HTTP PUT request of the passed in url and data, and returns
-        the result from the server.
-
+Does a request using HTTP PUT using the provided URL sending the data in the body.  
+If the request was successful, the response body content is returned; otherwise,
+the status line is returned.  The PUT is sent with Content-Type set to 
+application/xml.
 =head4 Parameters
-
 =over 4
-
-=item * C<$url> (string) - The Put Url
-
-=item * C<$data> (string) - POST data url encoded with content-type as application/xml
-
+=item * C<$url> (string) - The PUT URL
+=item * C<$data> (string) -  The data sent with the PUT
 =back
-
-Returns a string representing the page retrieved.
-
+Returns a string representing the HTTP response.  If the request is successful, 
+return the response body; otherwise, return the status line.
 =begin html
-
 <HR>
-
 =end html
-
 =cut
 sub doHttpPut
 {
@@ -176,26 +129,19 @@ sub doHttpPut
 }
 
 =head3 C<doHttpDelete($url)>
-
-Does a HTTP Delete request of the passed in url and returns
-        the result from the server.
-
+Does a request using HTTP DELETE using the provided URL sending the data in the body.  
+If the request was successful, the response body content is returned; otherwise,
+the status line is returned.  The PUT is sent with Content-Type set to 
+application/xml.
 =head4 Parameters
-
 =over 4
-
-=item * C<$url> (string) - The Delete Url
-
+=item * C<$url> (string) - The DELETE URL
 =back
-
-Returns a string representing response
-
+Returns a string representing the HTTP response.  If the request is successful, 
+return the response body; otherwise, return the status line.
 =begin html
-
 <HR>
-
 =end html
-
 =cut
 sub doHttpDelete
 {
@@ -203,35 +149,25 @@ sub doHttpDelete
    return doHttpPost($self, $url.';delete', ' ')
 }
 
-=head3 C<roundTimeToNearestFiveMinutes($theTime)>
-
-Rounds the time passed in down to the previous 5 minute mark.
-
+=head3 C<roundTimeToNearestBucketBorder($theTime)>
+Rounds the time passed in down to the previous minute mark.
 =head4 Parameters
-
 =over 4
-
 =item * C<$theTime> (long) - The time to round
-
 =back
-
 Returns a long containing the rounded time
-
 =begin html
-
 <HR>
-
 =end html
-
 =cut
-sub roundTimeToNearestFiveMinutes 
+sub roundTimeToNearestBucketBorder
 {
    my ($self, $theTime) = @_;
 
    my $dateTime = DateTime->from_epoch(epoch => $theTime);
 
    my $min = $dateTime->minute();
-   my $newMin = $min - ($min % 5);
+   my $newMin = $min - ($min % 1);
 
    $dateTime->set(minute => $newMin);
    $dateTime->set(second => 0);
@@ -240,28 +176,17 @@ sub roundTimeToNearestFiveMinutes
 }
 
 =head3 C<syncWithGnipClock($theTime)>
-
-This method gets the current time from the Gnip server,
-gets the current local time and determines the difference 
-between the two. It then adjusts the passed in time to 
+This method gets the current time from the Gnip server, gnipTimeets the current local 
+time and determines the difference between the two. It then adjusts the passed in time to 
 account for the difference.
-
 =head4 Parameters
-
 =over 4
-
 =item * C<$theTime> (long) - The time to adjust
-
 =back
-
 Returns a long containing the adjusted time
-
 =begin html
-
 <HR>
-
 =end html
-
 =cut
 sub syncWithGnipClock 
 {
@@ -273,47 +198,56 @@ sub syncWithGnipClock
    my $response = $agent->request($request);
 
    my $localTime = time();
-
-   my $formatter = DateTime::Format::Strptime->new( 
-      pattern => '%a, %d %b %Y %H:%M:%S %Z' );
-
-   my $gnipTime = 
-      ($formatter->parse_datetime($response->header('Date')))->epoch();
-
+   my $formatter = DateTime::Format::Strptime->new( pattern => '%a, %d %b %Y %H:%M:%S %Z' );
+   my $gnipTime = ($formatter->parse_datetime($response->header('Date')))->epoch();
    my $timeDelta = $gnipTime - $localTime;
 
    return $theTime + $timeDelta;
 }
 
 =head3 C<timeToString($theTime)>
-
 Converts the time passed in to a string of the form YYYYMMDDHHMM.
-
 =head4 Parameters
-
 =over 4
-
 =item * C<$theTime> (long) - The time to convert
-
 =back
-
 Returns a string containing the converted time
-
 =begin html
-
 <HR>
-
 =end html
-
 =cut
 sub timeToString
 {
    my ($self, $theTime) = @_;
 
-   my $formatter = DateTime::Format::Strptime->new( 
-      pattern => '%Y%m%d%H%M' );
+   my $formatter = DateTime::Format::Strptime->new( pattern => '%Y%m%d%H%M' );
 
    return DateTime->from_epoch( epoch => $theTime, formatter => $formatter );
+}
+
+=head3 C<buildTimeString($theTime)>
+Create a time string that can be passed to Gnip when referencing an activity or notification bucket.
+=head4 Parameters
+=over 4
+=item * C<$time> (long) - The time whose bucket to reference; if absent, defaults to the current system time.
+=back
+Returns a string containing the converted time formatted for use referencing an activity or notification bucket.
+=begin html
+<HR>
+=end html
+=cut
+sub buildTimeString
+{
+	my ($self, $date_and_time);
+	
+	if(undef == $date_and_time) 
+	{
+	    $date_and_time = time();	
+	}
+	
+	my $correctedTime = $self->{_helper}->syncWithGnipClock($date_and_time);
+    my $roundedTime = $self->{_helper}->roundTimeToNearestBucketBorder($correctedTime);
+    return $self->{_helper}->timeToString($roundedTime);    
 }
 
 1;
