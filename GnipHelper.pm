@@ -16,6 +16,7 @@ use DateTime;
 use DateTime::Format::Strptime;
 
 use constant GNIP_BASE_URL => 'https://prod.gnipcentral.com';
+use constant GNIP_USER_AGENT_HEADER => "Gnip-Client-Perl/2.0";
 
 =head3 C<new($username, $password)>
 Initialize a GnipHelper instance
@@ -58,6 +59,7 @@ sub doHttpGet
 
    my $agent = LWP::UserAgent->new;
    my $request = HTTP::Request->new(GET => $url);
+   $agent->agent(GNIP_USER_AGENT_HEADER);
    $request->authorization_basic($self->{_username}, $self->{_password});
    my $response = $agent->request($request);
 
@@ -91,6 +93,7 @@ sub doHttpPost
 
    my $agent = LWP::UserAgent->new;
    my $request = HTTP::Request->new(POST => $url);
+   $agent->agent(GNIP_USER_AGENT_HEADER);
    $request->authorization_basic($self->{_username}, $self->{_password});
    $request->content_type('application/xml');
    $request->content($data);
