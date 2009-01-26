@@ -52,6 +52,147 @@ sub publish
    return $self->{_helper}->doHttpPost($url, $activity_xml);
 }
 
+=head3 C<get_publisher($publisher_name, $scope)>
+This method takes in a publisher name and xml file and updates it
+=head4 Parameters
+=over 4 
+=item * <$publisher_name> (string) - The publisher of the data collection
+=item * <$scope> (string) - scope of request (my, gnip, public)
+=back
+Returns an array of items from the HTTP response in the form ($content, $response_code).
+=begin html
+<HR>
+=end html
+=cut
+sub get_publisher
+{
+   my ($self, $publisher_xml, $scope) = @_;
+   my $url = $self->{_helper}->GNIP_BASE_URL . "/" . $scope . "/publishers/" . $publisher_name . ".xml";
+   return $self->{_helper}->doHttpGet($url);
+}
+
+
+=head3 C<get_publishers>
+This method takes in an xml publisher file and creates a new publisher
+=head4 Parameters
+=over 4 
+=back
+Returns an array of items from the HTTP response in the form ($content, $response_code).
+=begin html
+<HR>
+=end html
+=cut
+sub get_publishers
+{
+   my ($self) = @_;
+   my $url = $self->{_helper}->GNIP_BASE_URL . "/my/publishers.xml";
+   return $self->{_helper}->doHttpGet($url);
+}
+
+
+=head3 C<create_publisher($publisher_xml)>
+This method takes in an xml publisher file and creates a new publisher
+=head4 Parameters
+=over 4 
+=item * <$publisher_xml> (string) - XML document formatted to Gnip schema <publisher/> type
+=back
+Returns an array of items from the HTTP response in the form ($content, $response_code).
+=begin html
+<HR>
+=end html
+=cut
+sub create_publisher
+{
+   my ($self, $publisher_xml) = @_;
+   my $url = $self->{_helper}->GNIP_BASE_URL . "/my/publishers/";
+   return $self->{_helper}->doHttpPost($url, $publisher_xml);
+}
+
+=head3 C<update_publisher($publisher_name, $publisher_xml)>
+This method takes in a publisher name and xml file and updates it
+=head4 Parameters
+=over 4 
+=item * <$publisher_name> (string) - The publisher of the data collection
+=item * <$publisher_xml> (string) - XML document formatted to Gnip schema <publisher/> type
+=back
+Returns an array of items from the HTTP response in the form ($content, $response_code).
+=begin html
+<HR>
+=end html
+=cut
+sub update_publisher
+{
+   my ($self, $publisher_name, $publisher_xml) = @_;
+   my $url = $self->{_helper}->GNIP_BASE_URL . "/my/publishers/" . $publisher_name . ".xml";
+   return $self->{_helper}->doHttpPut($url, $publisher_xml);
+}
+
+
+=head3 C<delete_rule($publisher_name, $filter_name, $rule_type, $rule_value, $scope)>
+This method finds a particular rule on a publisher's filter
+=head4 Parameters
+=over 4 
+=item * <$publisher_name> (string) - The publisher of the data collection
+=item * <$filter_name> (string) - The name of the filter to look for the rule
+=item * <$rule_type> (string) - The type of the rule being sought
+=item * <$rule_value> (string) - The value of the rule being sought
+=item * <$scope> (string) - scope of request (my, gnip, public)
+=back
+Returns an array of items from the HTTP response in the form ($content, $response_code).
+=begin html
+<HR>
+=end html
+=cut
+sub get_rule
+{
+    my ($self, $publisher_name, $filter_name, $rule_type, $rule_value, $scope) = @_;
+    my $url = $self->{_helper}->GNIP_BASE_URL . "/" . $scope . "/publishers/" . $publisher_name . "/filters/" . $filter_name . "/rules.xml?type=" . $rule_type . "&value=" . $rule_value;
+    return $self->{_helper}->doHttpGet($url);
+}
+
+=head3 C<delete_rule($publisher_name, $filter_name, $rule_type, $rule_value, $scope)>
+This method deletes a rule from the specified publisher's filters
+=head4 Parameters
+=over 4 
+=item * <$publisher_name> (string) - The publisher of the data collection
+=item * <$filter_name> (string) - The name of the filter from which the rule is being removed
+=item * <$rule_type> (string) - The type of the rule being removed
+=item * <$rule_value> (string) - The value of the rule being removed
+=item * <$scope> (string) - scope of request (my, gnip, public)
+=back
+Returns an array of items from the HTTP response in the form ($content, $response_code).
+=begin html
+<HR>
+=end html
+=cut
+sub delete_rule
+{
+    my ($self, $publisher_name, $filter_name, $rule_type, $rule_value, $scope) = @_;
+    my $url = $self->{_helper}->GNIP_BASE_URL . "/" . $scope . "/publishers/" . $publisher_name . "/filters/" . $filter_name . "/rules.xml?type=" . $rule_type . "&value=" . $rule_value;
+    return $self->{_helper}->doHttpDelete($url);
+}
+
+=head3 C<add_batch_rules($publisher_name, $filter_name, $rules_xml, $scope)>
+This method adds a batch of rules to a publisher's filter
+=head4 Parameters
+=over 4 
+=item * <$publisher_name> (string) - The publisher of the data collection
+=item * <$filter_name> (string) - The name of the filter to which the rules are being added
+=item * <$rules_xml> (string) - XML document formatted to Gnip schema <rules/> type
+=item * <$scope> (string) - scope of request (my, gnip, public)
+=back
+Returns an array of items from the HTTP response in the form ($content, $response_code).
+=begin html
+<HR>
+=end html
+=cut
+sub add_batch_rules
+{
+    my ($self, $publisher_name, $filter_name, $rules_xml, $scope) = @_;
+    my $url = $self->{_helper}->GNIP_BASE_URL . "/" . $scope . "/publishers/" . $publisher_name . "/filters/" . $filter_name . "/rules.xml";
+    return $self->{_helper}->doHttpPut($url, $rules_xml);
+}
+
 =head3 C<get_activities($name, $publisher_name, $filter_name, $date_and_time)>
 Gets all of the activities for a publisher.  If $date_and_time is passed in, it 
 will be used to reference an activity bucket; this value
